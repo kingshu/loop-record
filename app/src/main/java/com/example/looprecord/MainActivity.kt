@@ -2,6 +2,7 @@ package com.example.looprecord
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaPlayer
 import android.media.MediaRecorder
@@ -9,9 +10,9 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.LinearLayout
 import androidx.core.app.ActivityCompat
+import com.example.looprecord.services.RecorderService
 import java.io.IOException
 
 private const val LOG_TAG = "AudioRecordTest"
@@ -19,7 +20,7 @@ private const val REQUEST_RECORD_AUDIO_PERMISSION = 200
 
 class MainActivity : AppCompatActivity() {
 
-    private var fileName: String = ""
+    private var fileName: String = "${externalCacheDir?.absolutePath}/audiorecordtest.3gp"
 
     private var recordButton: RecordButton? = null
     private var recorder: MediaRecorder? = null
@@ -46,9 +47,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onRecord(start: Boolean) = if (start) {
-        startRecording()
+        RecorderService.startRecording(this)
     } else {
-        stopRecording()
+        RecorderService.stopRecording(this)
     }
 
     private fun onPlay(start: Boolean) = if (start) {
@@ -72,31 +73,6 @@ class MainActivity : AppCompatActivity() {
     private fun stopPlaying() {
         player?.release()
         player = null
-    }
-
-    private fun startRecording() {
-        recorder = MediaRecorder().apply {
-            setAudioSource(MediaRecorder.AudioSource.MIC)
-            setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
-            setOutputFile(fileName)
-            setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
-
-            try {
-                prepare()
-            } catch (e: IOException) {
-                Log.e(LOG_TAG, "prepare() failed")
-            }
-
-            start()
-        }
-    }
-
-    private fun stopRecording() {
-        recorder?.apply {
-            stop()
-            release()
-        }
-        recorder = null
     }
 
     internal inner class RecordButton(ctx: Context) : androidx.appcompat.widget.AppCompatButton(ctx) {
